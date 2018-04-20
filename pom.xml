@@ -214,6 +214,7 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
             <excludePackageNames>org.apache.commons.imaging.formats.psd.*:org.apache.commons.imaging.formats.png.*</excludePackageNames>
+            <doclint>none</doclint>
           </configuration>
         </plugin>
       </plugins>
