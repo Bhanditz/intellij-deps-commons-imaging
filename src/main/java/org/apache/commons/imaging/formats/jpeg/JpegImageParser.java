@@ -20,8 +20,8 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -790,16 +790,13 @@ public class JpegImageParser extends ImageParser {
             physicalHeightInch = (float) (height / (yDensity * unitsPerInch));
         }
 
-        final List<String> comments = new ArrayList<>();
         final List<Segment> commentSegments = readSegments(byteSource,
                 new int[] { JpegConstants.COM_MARKER}, false);
+        final List<String> comments = new ArrayList<>(commentSegments.size());
         for (final Segment commentSegment : commentSegments) {
             final ComSegment comSegment = (ComSegment) commentSegment;
             String comment = "";
-            try {
-                comment = new String(comSegment.getComment(), "UTF-8");
-            } catch (final UnsupportedEncodingException cannotHappen) { // NOPMD - can't happen
-            }
+            comment = new String(comSegment.getComment(), StandardCharsets.UTF_8);
             comments.add(comment);
         }
 

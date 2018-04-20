@@ -321,8 +321,7 @@ public class PnmImageParser extends ImageParser {
             throws ImageWriteException, IOException {
         PnmWriter writer = null;
         boolean useRawbits = true;
-        final boolean hasAlpha = new PaletteFactory().hasTransparency(src);
-
+        
         if (params != null) {
             final Object useRawbitsParam = params.get(PARAM_KEY_PNM_RAWBITS);
             if (useRawbitsParam != null) {
@@ -346,6 +345,7 @@ public class PnmImageParser extends ImageParser {
         }
 
         if (writer == null) {
+            final boolean hasAlpha = new PaletteFactory().hasTransparency(src);
             if (hasAlpha) {
                 writer = new PamWriter();
             } else {   
@@ -363,6 +363,11 @@ public class PnmImageParser extends ImageParser {
         // clear format key.
         if (params.containsKey(PARAM_KEY_FORMAT)) {
             params.remove(PARAM_KEY_FORMAT);
+        }
+
+        // clear rawbits key.
+        if (params.containsKey(PARAM_KEY_PNM_RAWBITS)) {
+            params.remove(PARAM_KEY_PNM_RAWBITS);
         }
         
         if (!params.isEmpty()) {

@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.commons.imaging.formats.png.scanlinefilters;
 
+package org.apache.commons.imaging.formats.jpeg;
+
+import java.io.File;
+import java.util.Collections;
 import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.Imaging;
 import org.junit.Test;
 
-import java.io.IOException;
+/**
+ * Test that an invalid segment will not cause an ArrayIndexOutOfBoundsException
+ * when the huffman table is created in a DHT segment.
+ */
+public class JpegWithInvalidDhtSegmentTest {
 
-import static org.junit.Assert.assertArrayEquals;
-
-public class ScanlineFilterUpTest {
-
-  @Test
-  public void testUnfilterWithNull() throws IOException, ImageReadException {
-      ScanlineFilterUp scanlineFilterUp = new ScanlineFilterUp();
-      byte[] byteArray = new byte[4];
-      scanlineFilterUp.unfilter(byteArray, byteArray, (byte[]) null);
-
-      assertArrayEquals(new byte[] {(byte)0, (byte)0, (byte)0, (byte)0}, byteArray);
-  }
-
+    @Test(expected = ImageReadException.class)
+    public void testSingleImage() throws Exception {
+        // we cannot use ImagingTest and getImageByFileName, as it would cause others
+        // tests to fail
+        final File imageFile = new File(JpegWithInvalidDhtSegmentTest.class
+                .getResource("/IMAGING-215/ArrayIndexOutOfBoundsException_DhtSegment_79.jpeg")
+                .getFile());
+        Imaging.getMetadata(imageFile, Collections.<String, Object>emptyMap());
+    }
 }

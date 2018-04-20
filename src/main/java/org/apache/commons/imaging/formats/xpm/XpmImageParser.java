@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.apache.commons.imaging.formats.xpm;
 
 import static org.apache.commons.imaging.ImagingConstants.PARAM_KEY_FORMAT;
@@ -33,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class XpmImageParser extends ImageParser {
                     throw new ImageReadException("Couldn't find rgb.txt in our resources");
                 }
                 final Map<String, Integer> colors = new HashMap<>();
-                try (InputStreamReader isReader = new InputStreamReader(rgbTxtStream, "US-ASCII");
+                try (InputStreamReader isReader = new InputStreamReader(rgbTxtStream, StandardCharsets.US_ASCII);
                         BufferedReader reader = new BufferedReader(isReader)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -677,12 +677,12 @@ public class XpmImageParser extends ImageParser {
         }
 
         String line = "/* XPM */\n";
-        os.write(line.getBytes("US-ASCII"));
+        os.write(line.getBytes(StandardCharsets.US_ASCII));
         line = "static char *" + randomName() + "[] = {\n";
-        os.write(line.getBytes("US-ASCII"));
+        os.write(line.getBytes(StandardCharsets.US_ASCII));
         line = "\"" + src.getWidth() + " " + src.getHeight() + " " + colors
                 + " " + charsPerPixel + "\",\n";
-        os.write(line.getBytes("US-ASCII"));
+        os.write(line.getBytes(StandardCharsets.US_ASCII));
 
         for (int i = 0; i < colors; i++) {
             String color;
@@ -693,15 +693,15 @@ public class XpmImageParser extends ImageParser {
             }
             line = "\"" + pixelsForIndex(i, charsPerPixel) + " c " + color
                     + "\",\n";
-            os.write(line.getBytes("US-ASCII"));
+            os.write(line.getBytes(StandardCharsets.US_ASCII));
         }
 
         String separator = "";
         for (int y = 0; y < src.getHeight(); y++) {
-            os.write(separator.getBytes("US-ASCII"));
+            os.write(separator.getBytes(StandardCharsets.US_ASCII));
             separator = ",\n";
             line = "\"";
-            os.write(line.getBytes("US-ASCII"));
+            os.write(line.getBytes(StandardCharsets.US_ASCII));
             for (int x = 0; x < src.getWidth(); x++) {
                 final int argb = src.getRGB(x, y);
                 if ((argb & 0xff000000) == 0) {
@@ -711,14 +711,14 @@ public class XpmImageParser extends ImageParser {
                             palette.getPaletteIndex(0xffffff & argb),
                             charsPerPixel);
                 }
-                os.write(line.getBytes("US-ASCII"));
+                os.write(line.getBytes(StandardCharsets.US_ASCII));
             }
             line = "\"";
-            os.write(line.getBytes("US-ASCII"));
+            os.write(line.getBytes(StandardCharsets.US_ASCII));
         }
 
         line = "\n};\n";
-        os.write(line.getBytes("US-ASCII"));
+        os.write(line.getBytes(StandardCharsets.US_ASCII));
     }
 
     /**

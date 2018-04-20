@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.apache.commons.imaging.formats.xbm;
 
 import static org.apache.commons.imaging.ImagingConstants.PARAM_KEY_FORMAT;
@@ -31,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -150,13 +150,13 @@ public class XbmImageParser extends ImageParser {
             for (final Entry<String, String> entry : defines.entrySet()) {
                 final String name = entry.getKey();
                 if (name.endsWith("_width")) {
-                    width = Integer.parseInt(entry.getValue());
+                    width = parseCIntegerLiteral(entry.getValue());
                 } else if (name.endsWith("_height")) {
-                    height = Integer.parseInt(entry.getValue());
+                    height = parseCIntegerLiteral(entry.getValue());
                 } else if (name.endsWith("_x_hot")) {
-                    xHot = Integer.parseInt(entry.getValue());
+                    xHot = parseCIntegerLiteral(entry.getValue());
                 } else if (name.endsWith("_y_hot")) {
-                    yHot = Integer.parseInt(entry.getValue());
+                    yHot = parseCIntegerLiteral(entry.getValue());
                 }
              }
             if (width == -1) {
@@ -173,6 +173,22 @@ public class XbmImageParser extends ImageParser {
             return xbmParseResult;
         }
     }
+    
+    private static int parseCIntegerLiteral(String value) {
+        if (value.startsWith("0")) {
+            if (value.length() >= 2) {
+                if (value.charAt(1) == 'x' || value.charAt(1) == 'X') {
+                    return Integer.parseInt(value.substring(2), 16);
+                } else {
+                    return Integer.parseInt(value.substring(1), 8);
+                }
+            } else {
+                return 0;
+            }
+        } else {
+            return Integer.parseInt(value);
+        }
+    }
 
     private BufferedImage readXbmImage(final XbmHeader xbmHeader, final BasicCParser cParser)
             throws ImageReadException, IOException {
@@ -186,7 +202,7 @@ public class XbmImageParser extends ImageParser {
         if (token == null) {
             throw new ImageReadException(
                     "Parsing XBM file failed, no 'unsigned' "
-                            + "or 'char' token");
+                            + "or 'char' or 'short' token");
         }
         if ("unsigned".equals(token)) {
             token = cParser.nextToken();
@@ -302,7 +318,7 @@ public class XbmImageParser extends ImageParser {
         return readXbmImage(result.xbmHeader, result.cParser);
     }
 
-    private String randomName() {
+    private static String randomName() {
         final UUID uuid = UUID.randomUUID();
         final StringBuilder stringBuilder = new StringBuilder("a");
         long bits = uuid.getMostSignificantBits();
@@ -317,7 +333,7 @@ public class XbmImageParser extends ImageParser {
         return stringBuilder.toString();
     }
 
-    private String toPrettyHex(final int value) {
+    private static String toPrettyHex(final int value) {
         final String s = Integer.toHexString(0xff & value);
         if (s.length() == 2) {
             return "0x" + s;
@@ -343,9 +359,9 @@ public class XbmImageParser extends ImageParser {
 
         final String name = randomName();
 
-        os.write(("#define " + name + "_width " + src.getWidth() + "\n").getBytes("US-ASCII"));
-        os.write(("#define " + name + "_height " + src.getHeight() + "\n").getBytes("US-ASCII"));
-        os.write(("static unsigned char " + name + "_bits[] = {").getBytes("US-ASCII"));
+        os.write(("#define " + name + "_width " + src.getWidth() + "\n").getBytes(StandardCharsets.US_ASCII));
+        os.write(("#define " + name + "_height " + src.getHeight() + "\n").getBytes(StandardCharsets.US_ASCII));
+        os.write(("static unsigned char " + name + "_bits[] = {").getBytes(StandardCharsets.US_ASCII));
 
         int bitcache = 0;
         int bitsInCache = 0;
@@ -366,33 +382,33 @@ public class XbmImageParser extends ImageParser {
                 bitcache |= (sample << bitsInCache);
                 ++bitsInCache;
                 if (bitsInCache == 8) {
-                    os.write(separator.getBytes("US-ASCII"));
+                    os.write(separator.getBytes(StandardCharsets.US_ASCII));
                     separator = ",";
                     if (written == 12) {
-                        os.write("\n  ".getBytes("US-ASCII"));
+                        os.write("\n  ".getBytes(StandardCharsets.US_ASCII));
                         written = 0;
                     }
-                    os.write(toPrettyHex(bitcache).getBytes("US-ASCII"));
+                    os.write(toPrettyHex(bitcache).getBytes(StandardCharsets.US_ASCII));
                     bitcache = 0;
                     bitsInCache = 0;
                     ++written;
                 }
             }
             if (bitsInCache != 0) {
-                os.write(separator.getBytes("US-ASCII"));
+                os.write(separator.getBytes(StandardCharsets.US_ASCII));
                 separator = ",";
                 if (written == 12) {
-                    os.write("\n  ".getBytes("US-ASCII"));
+                    os.write("\n  ".getBytes(StandardCharsets.US_ASCII));
                     written = 0;
                 }
-                os.write(toPrettyHex(bitcache).getBytes("US-ASCII"));
+                os.write(toPrettyHex(bitcache).getBytes(StandardCharsets.US_ASCII));
                 bitcache = 0;
                 bitsInCache = 0;
                 ++written;
             }
         }
 
-        os.write("\n};\n".getBytes("US-ASCII"));
+        os.write("\n};\n".getBytes(StandardCharsets.US_ASCII));
     }
 
     /**
